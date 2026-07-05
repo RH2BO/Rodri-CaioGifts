@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rodri & Caio - Regalos</title>
+    <!-- Librería de Estilos Pixel Art -->
+    <link href="https://unpkg.com/nes.css@2.3.0/css/nes.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #212529;
+            font-family: 'Press Start 2P', monospace;
+            padding: 15px;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-size: 11px;
+            color: #212529;
+        }
+
+        .game-container {
+            max-width: 400px;
+            width: 100%;
+            min-height: 540px;
+            
+            /* Fondo inicial */
+            background-image: url('giftshome.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            
+            padding: 25px 20px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            transition: background-image 0.3s ease-in-out;
+        }
+
+        #game-flow {
+            height: 100%;
+            min-height: 490px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 490px;
+            width: 100%;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        .nes-balloon {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .nes-balloon::after {
+            border-right-color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        .bottom-content-wrapper {
+            margin-top: auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .btn-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .gifts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .gift-card {
+            background-color: rgba(255, 255, 255, 0.95);
+            border: 4px solid #212529;
+            border-radius: 4px;
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+        }
+
+        .gift-card:hover {
+            transform: scale(1.04);
+            border-color: #f7d51d;
+        }
+
+        .gift-card img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border: 2px solid #212529;
+            margin-bottom: 8px;
+            image-rendering: pixelated;
+        }
+
+        .gift-card span {
+            font-size: 8px;
+            line-height: 1.4;
+            font-weight: bold;
+            color: #212529;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container nes-container is-rounded" id="main-container">
+    <div id="game-flow">
+
+        <!-- PANTALLA 0: IDIOMA -->
+        <div id="screen-idioma" class="screen active">
+            <div class="nes-balloon from-left">
+                <p>Choose your language / Escolha o idioma / Elegí tu idioma:</p>
+            </div>
+            <div class="btn-container">
+                <button class="nes-btn is-primary" onclick="selectLanguage('es')">[ ESPAÑOL (ARG) ]</button>
+                <button class="nes-btn is-success" onclick="selectLanguage('pt')">[ PORTUGUÊS (BR) ]</button>
+                <button class="nes-btn is-warning" onclick="selectLanguage('en')">[ ENGLISH ]</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 1: SELECCIÓN DE REGALO -->
+        <div id="screen-选gift" class="screen">
+            <div class="nes-balloon from-left">
+                <p id="text-pregunta-gift"></p>
+            </div>
+            <div class="bottom-content-wrapper">
+                <div class="gifts-grid">
+                    <div class="gift-card" onclick="elegirRegalo('casa')">
+                        <img src="perra-casa.png" alt="Nueva Casa">
+                        <span id="lbl-opt-casa">CASITA NUEVA</span>
+                    </div>
+                    <div class="gift-card" onclick="elegirRegalo('luna')">
+                        <img src="perra-luna.png" alt="Luna de Miel">
+                        <span id="lbl-opt-luna">LUNA DE MIEL</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA 2: COMENTARIO PERSONALIZADO -->
+        <div id="screen-comentario" class="screen">
+            <div class="nes-balloon from-left">
+                <p id="text-comentario"></p>
+            </div>
+            <div class="btn-container">
+                <button class="nes-btn is-primary" id="btn-next-comentario" onclick="nextScreen('comentario', 'pix2')"></button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 3: EXPLICACIÓN PIX (DULCE) -->
+        <div id="screen-pix2" class="screen">
+            <div class="nes-balloon from-left">
+                <p id="text-pix2"></p>
+            </div>
+            <div class="btn-container">
+                <button class="nes-btn is-success" id="btn-copy-pix" onclick="manejarCopiado()"></button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 4: INSTRUCCIÓN APP DE PAGOS -->
+        <div id="screen-instruccion-app" class="screen">
+            <div class="nes-balloon from-left">
+                <p id="text-instruccion-app"></p>
+            </div>
+            <div class="btn-container">
+                <button class="nes-btn is-primary" id="btn-next-app" onclick="nextScreen('instruccion-app', 'soporte')"></button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 5: CONTACTO DE EMERGENCIA + AGRADECIMIENTO -->
+        <div id="screen-soporte" class="screen">
+            <div class="nes-balloon from-left">
+                <p id="text-soporte"></p>
+            </div>
+            <div class="btn-container">
+                <button class="nes-btn is-primary" id="btn-final-regalos" onclick="volverAlHome()"></button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // 🔍 REEMPLAZÁ ESTE TEXTO CON TU CÓDIGO PIX REAL
+    const MI_CODIGO_PIX = "TU_CODIGO_PIX_AQUI_123456789_A_B_C";
+
+    const i18n = {
+        es: {
+            btnSiguiente: "[ SIGUIENTE ]",
+            pregunta: "¿Qué regalito nos querés hacer? 🐾",
+            optCasa: "NUEVA CASITA 🏠",
+            optLuna: "LUNA DE MIEL ✈️",
+            comentarioCasa: "¡Mis papis van a amar la casa nueva! 🏠",
+            comentarioLuna: "¡Mis papis van a amar la luna de miel! ✈️",
+            pix2: "Mis papis amarían un PIX con el valor que dicte tu corazón... ❤️",
+            btnCopiar: "[ COPIAR PIX ]",
+            copiado: "¡Copiado con éxito! 📋",
+            appInstruccion: "Ahora podés pegarlo en tu app de pagos para transferir. ✨",
+            soporte: "¿Algún problema? No dudes en contactar a mis papis. ¡Gracias de corazón! 🙏💕",
+            btnHome: "[ VOLVER AL HOME ]"
+        },
+        pt: {
+            btnSiguiente: "[ SEGUINTE ]",
+            pregunta: "Qual presente você quer nos dar? 🐾",
+            optCasa: "CASA NOVA 🏠",
+            optLuna: "LUA DE MEL ✈️",
+            comentarioCasa: "Meus pais vão amar a casa nova! 🏠",
+            comentarioLuna: "Meus pais vão amar a lua de mel! ✈️",
+            pix2: "Meus pais iam amar um PIX com o valor que seu coração mandar... ❤️",
+            btnCopiar: "[ COPIAR PIX ]",
+            copiado: "Copiado com sucesso! 📋",
+            appInstruccion: "Agora você pode colar no seu app de pagamentos para transferir. ✨",
+            soporte: "Qualquer problema, não hesite em falar com meus pais. Obrigado de coração! 🙏💕",
+            btnHome: "[ VOLTAR PARA HOME ]"
+        },
+        en: {
+            btnSiguiente: "[ NEXT ]",
+            pregunta: "Which gift would you like to give us? 🐾",
+            optCasa: "NEW HOUSE 🏠",
+            optLuna: "HONEYMOON ✈️",
+            comentarioCasa: "My dads will love the new house! 🏠",
+            comentarioLuna: "My dads will love the honeymoon! ✈️",
+            pix2: "My dads would love a PIX with whatever amount your heart desires... ❤️",
+            btnCopiar: "[ COPY PIX CODE ]",
+            copiado: "Copied successfully! 📋",
+            appInstruccion: "Now you can paste it into your banking app to transfer. ✨",
+            soporte: "Any issues? Don't hesitate to contact my dads. Thank you from the heart! 🙏💕",
+            btnHome: "[ BACK TO HOME ]"
+        }
+    };
+
+    let currentLang = 'es';
+    let yaCopio = false;
+
+    function selectLanguage(lang) {
+        currentLang = lang;
+        const t = i18n[lang];
+        
+        document.getElementById('text-pregunta-gift').innerText = t.pregunta;
+        document.getElementById('lbl-opt-casa').innerText = t.optCasa;
+        document.getElementById('lbl-opt-luna').innerText = t.optLuna;
+        
+        document.getElementById('btn-next-comentario').innerText = t.btnSiguiente;
+        document.getElementById('text-pix2').innerText = t.pix2;
+        document.getElementById('btn-copy-pix').innerText = t.btnCopiar;
+        
+        document.getElementById('text-instruccion-app').innerText = t.appInstruccion;
+        document.getElementById('btn-next-app').innerText = t.btnSiguiente;
+        
+        document.getElementById('text-soporte').innerText = t.soporte;
+        document.getElementById('btn-final-regalos').innerText = t.btnHome;
+
+        nextScreen('idioma', '选gift');
+    }
+
+    function elegirRegalo(tipo) {
+        const container = document.getElementById('main-container');
+        
+        if (tipo === 'casa') {
+            container.style.backgroundImage = "url('bg-casa.png')";
+            document.getElementById('text-comentario').innerText = i18n[currentLang].comentarioCasa;
+        } else {
+            container.style.backgroundImage = "url('bg-luna.png')";
+            document.getElementById('text-comentario').innerText = i18n[currentLang].comentarioLuna;
+        }
+        
+        nextScreen('选gift', 'comentario');
+    }
+
+    function nextScreen(current, next) {
+        document.getElementById(`screen-${current}`).classList.remove('active');
+        document.getElementById(`screen-${next}`).classList.add('active');
+    }
+
+    function manejarCopiado() {
+        if (!yaCopio) {
+            navigator.clipboard.writeText(MI_CODIGO_PIX).then(() => {
+                const btn = document.getElementById('btn-copy-pix');
+                btn.innerText = i18n[currentLang].copiado;
+                btn.classList.remove('is-success');
+                btn.classList.add('is-warning');
+                yaCopio = true;
+                
+                setTimeout(() => {
+                    btn.innerText = i18n[currentLang].btnSiguiente;
+                    btn.classList.remove('is-warning');
+                    btn.classList.add('is-primary');
+                }, 2000);
+            }).catch(err => {
+                alert("Error al copiar: " + err);
+            });
+        } else {
+            nextScreen('pix2', 'instruccion-app');
+        }
+    }
+
+    function volverAlHome() {
+        window.location.href = "https://rh2bo.github.io/Rodri-CaioCasorio/"; 
+    }
+</script>
+</body>
+</html>
